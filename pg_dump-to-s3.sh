@@ -40,7 +40,11 @@ for db in "${DBS[@]}"; do
     echo "   -> backing up $db..."
 
     # Dump database
-    pg_dump -Fc -h $PG_HOST -U $PG_USER -p $PG_PORT $db > /tmp/"$FILENAME".dump
+    docker exec \
+      -e PGPASSWORD="$PG_PASSWORD" \
+      "$PG_DOCKER_CONTAINER" \
+      pg_dump -Fc -h "$PG_HOST" -U "$PG_USER" -p "$PG_PORT" "$db" \
+      > /tmp/"$FILENAME".dump
 
     # Copy to S3
     aws s3 cp /tmp/"$FILENAME".dump s3://$S3_PATH/"$FILENAME".dump --storage-class STANDARD_IA
